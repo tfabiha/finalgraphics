@@ -20,7 +20,7 @@ def draw_scanline(x0, z0, x1, z1, y, screen, zbuffer, color):
         x+= 1
         z+= delta_z
 
-def draw_scanline_goraud(x0, z0, x1, z1, y, screen, zbuffer, c0, c1):
+def draw_scanline_gouraud(x0, z0, x1, z1, y, screen, zbuffer, c0, c1):
     if x0 > x1:
         tx = x0
         tz = z0
@@ -57,6 +57,35 @@ def draw_scanline_goraud(x0, z0, x1, z1, y, screen, zbuffer, c0, c1):
         x+= 1
         z+= delta_z
         c = [ c[i] + delta_c[i] for i in range(3) ]
+
+def draw_scanline_phong(x0, z0, x1, z1, y, screen, zbuffer, v0, v1):
+    if x0 > x1:
+        tx = x0
+        tz = z0
+        tc = c0
+        x0 = x1
+        z0 = z1
+        c0 = c1
+        x1 = tx
+        z1 = tz
+        c1 = tc
+
+    print("\nnew line")
+    print(c0, c1)
+    
+    x = x0
+    z = z0
+    v = v0
+    delta_z = (z1 - z0) / (x1 - x0 + 1) if (x1 - x0 + 1) != 0 else 0
+    delta_v = [ (v1[i] - v0[i]) / (x1 - x0 + 1) if (x1 - x0 + 1) != 0 else 0 for i in range(3) ]
+
+    while x <= x1:
+        # print(t)
+        color = get_lighting(v, view, ambient, light, symbols, reflect )
+        plot(screen, zbuffer, color, x, y, z)
+        x+= 1
+        z+= delta_z
+        v = [ v[i] + delta_v[i] for i in range(3) ]
 
 def scanline_convert(polygons, i, screen, zbuffer, color):
     flip = False
@@ -107,7 +136,7 @@ def scanline_convert(polygons, i, screen, zbuffer, color):
         z1+= dz1
         y+= 1
 
-def scanline_convert_goraud(polygons, i, screen, zbuffer, col_0, col_1, col_2):
+def scanline_convert_gouraud(polygons, i, screen, zbuffer, col_0, col_1, col_2):
     flip = False
     BOT = 0
     TOP = 2
@@ -118,12 +147,6 @@ def scanline_convert_goraud(polygons, i, screen, zbuffer, col_0, col_1, col_2):
     points = [ (polygons[i][0], polygons[i][1], polygons[i][2], col_0[0], col_0[1], col_0[2]),
                (polygons[i+1][0], polygons[i+1][1], polygons[i+1][2], col_1[0], col_1[1], col_1[2]),
                (polygons[i+2][0], polygons[i+2][1], polygons[i+2][2], col_2[0], col_2[1], col_2[2]) ]
-
-    '''
-    points = [ (polygons[i][0], polygons[i][1], polygons[i][2], col, col, col),
-               (polygons[i+1][0], polygons[i+1][1], polygons[i+1][2], col, col, col),
-               (polygons[i+2][0], polygons[i+2][1], polygons[i+2][2], col, col, col) ]
-    '''
 
     # alas random color, we hardly knew ye
     #color = [0,0,0]
@@ -165,7 +188,7 @@ def scanline_convert_goraud(polygons, i, screen, zbuffer, col_0, col_1, col_2):
         #draw_line(int(x0), y, z0, int(x1), y, z1, screen, zbuffer, color)
         # print("\n drawing new scanline")
         # print(dc0, dc1)
-        draw_scanline_goraud(int(x0), z0, int(x1), z1, y, screen, zbuffer, c0, c1)
+        draw_scanline_gouraud(int(x0), z0, int(x1), z1, y, screen, zbuffer, c0, c1)
         x0+= dx0
         z0+= dz0
         c0 = [ c0[i] + dc0[i] for i in range(3) ]
@@ -174,6 +197,64 @@ def scanline_convert_goraud(polygons, i, screen, zbuffer, col_0, col_1, col_2):
         c1 = [ c1[i] + dc1[i] for i in range(3) ]
         y+= 1
 
+def scanline_convert_phong(polygons, i, screen, zbuffer, v_0, v_1, v_2):
+    flip = False
+    BOT = 0
+    TOP = 2
+    MID = 1
+
+    points = [ (polygons[i][0], polygons[i][1], polygons[i][2], v_0[0], v_0[1], v_0[2]),
+               (polygons[i+1][0], polygons[i+1][1], polygons[i+1][2], v_1[0], v_1[1], v_1[2]),
+               (polygons[i+2][0], polygons[i+2][1], polygons[i+2][2], v_2[0], v_2[1], v_2[2]) ]
+
+    # alas random color, we hardly knew ye
+    #color = [0,0,0]
+    #color[RED] = (23*(i/3)) %256
+    #color[GREEN] = (109*(i/3)) %256
+    #color[BLUE] = (227*(i/3)) %256
+
+    points.sort(key = lambda x: x[1])
+    x0 = points[BOT][0]
+    z0 = points[BOT][2]
+    v0 = [ points[BOT][i+3] for i in range(3) ]
+    x1 = points[BOT][0]
+    z1 = points[BOT][2]
+    v1 = [ points[BOT][i+3] for i in range(3) ]
+    y = int(points[BOT][1])
+
+    distance0 = int(points[TOP][1]) - y * 1.0 + 1
+    distance1 = int(points[MID][1]) - y * 1.0 + 1
+    distance2 = int(points[TOP][1]) - int(points[MID][1]) * 1.0 + 1
+
+    dx0 = (points[TOP][0] - points[BOT][0]) / distance0 if distance0 != 0 else 0
+    dz0 = (points[TOP][2] - points[BOT][2]) / distance0 if distance0 != 0 else 0
+    dv0 = [ (points[TOP][i+3] - points[BOT][i+3]) / distance0 if distance0 != 0 else 0 for i in range(3) ]
+    dx1 = (points[MID][0] - points[BOT][0]) / distance1 if distance1 != 0 else 0
+    dz1 = (points[MID][2] - points[BOT][2]) / distance1 if distance1 != 0 else 0
+    dv1 = [ (points[MID][i+3] - points[BOT][i+3]) / distance1 if distance1 != 0 else 0 for i in range(3) ]
+
+    while y <= int(points[TOP][1]):
+        if ( not flip and y >= int(points[MID][1])):
+            flip = True
+
+            dx1 = (points[TOP][0] - points[MID][0]) / distance2 if distance2 != 0 else 0
+            dz1 = (points[TOP][2] - points[MID][2]) / distance2 if distance2 != 0 else 0
+            dv1 = [ (points[TOP][i+3] - points[MID][i+3]) / distance2 if distance2 != 0 else 0 for i in range(3) ]
+            x1 = points[MID][0]
+            z1 = points[MID][2]
+            v1 = [ points[MID][i+3] for i in range(3) ]
+
+        #draw_line(int(x0), y, z0, int(x1), y, z1, screen, zbuffer, color)
+        # print("\n drawing new scanline")
+        # print(dc0, dc1)
+        draw_scanline_gouraud(int(x0), z0, int(x1), z1, y, screen, zbuffer, v0, v1)
+        x0+= dx0
+        z0+= dz0
+        v0 = [ v0[i] + dv0[i] for i in range(3) ]
+        x1+= dx1
+        z1+= dz1
+        v1 = [ v1[i] + dv1[i] for i in range(3) ]
+        y+= 1
 
 
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
@@ -199,7 +280,7 @@ def draw_polygons( polygons, screen, zbuffer, view, ambient, light, symbols, ref
 
         point+= 3
 
-def draw_polygons_goraud( polygons, screen, zbuffer, view, ambient, light, symbols, reflect):
+def draw_polygons_gouraud( polygons, screen, zbuffer, view, ambient, light, symbols, reflect):
     if len(polygons) < 2:
         print 'Need at least 3 points to draw'
         return
@@ -259,11 +340,68 @@ def draw_polygons_goraud( polygons, screen, zbuffer, view, ambient, light, symbo
             print("\ndraw new triangle")
             print(col_0, col_1, col_2)
             
-            scanline_convert_goraud(polygons, point, screen, zbuffer, col_0, col_1, col_2)
+            scanline_convert_gouraud(polygons, point, screen, zbuffer, col_0, col_1, col_2)
 
         point+= 3
 
+def draw_polygons_phong( polygons, screen, zbuffer, view, ambient, light, symbols, reflect):
+    if len(polygons) < 2:
+        print 'Need at least 3 points to draw'
+        return
 
+    vertex = {}
+    
+    point = 0
+    while point < len(polygons):
+        if point % 3 == 0:
+            first = point
+        elif point % 3 == 1:
+            first = point - 1
+        else:
+            first = point - 2
+
+        normal = calculate_normal( polygons, first )
+        # print(normal)
+
+        if tuple( polygons[point] ) in vertex:
+
+            for i in range(3):                
+                vertex[ tuple( polygons[point] ) ][i] += normal[i]
+        else:
+            vertex[ tuple( polygons[point] ) ] = normal
+
+        # print(vertex[ tuple( polygons[point] ) ])
+        point += 1
+
+    # print("\n\nkeys")
+    # print(vertex.keys())
+    
+    for key in vertex.keys():
+        # print (vertex[key])
+        normalize( vertex[ key ] )
+        # print (vertex[key])
+
+    point = 0
+    while point < len(polygons) - 2:
+
+        norm_0 = vertex[ tuple( polygons[point] ) ]
+        norm_1 = vertex[ tuple( polygons[point+1] ) ]
+        norm_2 = vertex[ tuple( polygons[point+2] ) ]
+
+        # print(norm_0)
+        # print(norm_1)
+        # print(norm_2)
+        
+        #print normal
+        normal = calculate_normal(polygons, point)[:]
+        
+        if normal[2] > 0:
+            
+            scanline_convert_gouraud(polygons, point, screen, zbuffer, norm_0, norm_1, norm_2)
+
+        point+= 3
+
+        
 def add_box( polygons, x, y, z, width, height, depth ):
     x1 = x + width
     y1 = y - height
