@@ -32,6 +32,9 @@ def draw_scanline_goraud(x0, z0, x1, z1, y, screen, zbuffer, c0, c1):
         z1 = tz
         c1 = tc
 
+    print("\nnew line")
+    print(c0, c1)
+    
     x = x0
     z = z0
     c = c0
@@ -39,8 +42,17 @@ def draw_scanline_goraud(x0, z0, x1, z1, y, screen, zbuffer, c0, c1):
     delta_c = [ (c1[i] - c0[i]) / (x1 - x0 + 1) if (x1 - x0 + 1) != 0 else 0 for i in range(3) ]
 
     while x <= x1:
-        t = [ int(c[i]) if c[i] >= 0 else 0 for i in range(3) ]
-        print(t)
+
+        t = [0, 0, 0]
+        for i in range(3):
+            if c[i] > 255:
+                t[i] = 255
+            elif c[i] < 0:
+                t[i] = 0
+            else:
+                t[i] = int(c[i])
+
+        # print(t)
         plot(screen, zbuffer, t, x, y, z)
         x+= 1
         z+= delta_z
@@ -134,10 +146,10 @@ def scanline_convert_goraud(polygons, i, screen, zbuffer, col_0, col_1, col_2):
 
     dx0 = (points[TOP][0] - points[BOT][0]) / distance0 if distance0 != 0 else 0
     dz0 = (points[TOP][2] - points[BOT][2]) / distance0 if distance0 != 0 else 0
-    dc0 = [ (points[TOP][i+3] - points[BOT][i+1]) / distance0 if distance0 != 0 else 0 for i in range(3) ]
+    dc0 = [ (points[TOP][i+3] - points[BOT][i+3]) / distance0 if distance0 != 0 else 0 for i in range(3) ]
     dx1 = (points[MID][0] - points[BOT][0]) / distance1 if distance1 != 0 else 0
     dz1 = (points[MID][2] - points[BOT][2]) / distance1 if distance1 != 0 else 0
-    dc1 = [ (points[MID][i+3] - points[BOT][i+1]) / distance1 if distance1 != 0 else 0 for i in range(3) ]
+    dc1 = [ (points[MID][i+3] - points[BOT][i+3]) / distance1 if distance1 != 0 else 0 for i in range(3) ]
 
     while y <= int(points[TOP][1]):
         if ( not flip and y >= int(points[MID][1])):
@@ -145,12 +157,14 @@ def scanline_convert_goraud(polygons, i, screen, zbuffer, col_0, col_1, col_2):
 
             dx1 = (points[TOP][0] - points[MID][0]) / distance2 if distance2 != 0 else 0
             dz1 = (points[TOP][2] - points[MID][2]) / distance2 if distance2 != 0 else 0
-            dc1 = [ (points[TOP][i+3] - points[MID][i+1]) / distance2 if distance2 != 0 else 0 for i in range(3) ]
+            dc1 = [ (points[TOP][i+3] - points[MID][i+3]) / distance2 if distance2 != 0 else 0 for i in range(3) ]
             x1 = points[MID][0]
             z1 = points[MID][2]
             c1 = [ points[MID][i+3] for i in range(3) ]
 
         #draw_line(int(x0), y, z0, int(x1), y, z1, screen, zbuffer, color)
+        # print("\n drawing new scanline")
+        # print(dc0, dc1)
         draw_scanline_goraud(int(x0), z0, int(x1), z1, y, screen, zbuffer, c0, c1)
         x0+= dx0
         z0+= dz0
@@ -242,6 +256,7 @@ def draw_polygons_goraud( polygons, screen, zbuffer, view, ambient, light, symbo
             col_1 = get_lighting(norm_1, view, ambient, light, symbols, reflect )
             col_2 = get_lighting(norm_2, view, ambient, light, symbols, reflect )
 
+            print("\ndraw new triangle")
             print(col_0, col_1, col_2)
             
             scanline_convert_goraud(polygons, point, screen, zbuffer, col_0, col_1, col_2)
