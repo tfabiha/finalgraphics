@@ -200,7 +200,15 @@ def run(filename):
                 reflect = '.white'
 
             elif c == "mesh":
-                pass
+                tmp = []
+
+                add_mesh( tmp, command['cs'] )
+                print(tmp)
+
+                matrix_mult( stack[-1], tmp )
+                draw_poly(tmp, screen, zbuffer, view, ambient, lights, symbols, reflect)
+                tmp = []
+                reflect = '.white'
                 
             elif c == 'line':
                 add_edge(tmp,

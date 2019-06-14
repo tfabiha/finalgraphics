@@ -1,10 +1,15 @@
 constants shiny_purple 0.2 0.3 0.7 0.0 0.0 0.0 0.0 0.3 0.7
 constants matte_purple 0.2 0.7 0.3 0.0 0.0 0.0 0.0 0.7 0.3
 
-light f .25 .25 .25 255 0 0
-light r 500 500 .25 0 255 0
-light s 500 .25 .25 0 0 255
+//light f .25 .25 .25 255 0 0
+//light r 500 500 .25 0 255 0
+//light s 500 .25 .25 0 0 255
 
-sphere shiny_purple 250 250 0 200 
+//sphere shiny_purple 250 250 0 200 
+
+move 250 150 0
+scale 25 25 25 
+mesh :airboat
+
 display
-shading phong
+//shading phong

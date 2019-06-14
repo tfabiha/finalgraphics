@@ -259,7 +259,59 @@ def scanline_convert_phong(polygons, i, screen, zbuffer, v_0, v_1, v_2, view, am
         v1 = [ v1[i] + dv1[i] for i in range(3) ]
         y+= 1
 
+def add_mesh( polygons, filename ):
 
+    f = open(filename+".obj").read()
+    # print(f)
+
+    f = f.split("\n")
+    # print(f)
+
+    vertices = []
+    
+    # get all the vertices first
+    for line in f:
+        arguments = line.split(" ")
+        # print(arguments)
+
+        if isinstance( arguments, list ) and arguments[0] == "v":
+            vertices.append([ float(arguments[i+1]) for i in range(3) ])
+
+    # now we add in polygons
+    for line in f:
+        arguments = line.split(" ")
+
+        if isinstance( arguments, list ) and arguments[0] == "f":
+            try:
+                add_polygon(polygons,
+                            float(vertices[int(arguments[1]) - 1][0]),
+                            float(vertices[int(arguments[1]) - 1][1]),
+                            float(vertices[int(arguments[1]) - 1][2]),
+                            float(vertices[int(arguments[2]) - 1][0]),
+                            float(vertices[int(arguments[2]) - 1][1]),
+                            float(vertices[int(arguments[2]) - 1][2]),
+                            float(vertices[int(arguments[3]) - 1][0]),
+                            float(vertices[int(arguments[3]) - 1][1]),
+                            float(vertices[int(arguments[3]) - 1][2]),
+                                )           
+            except:
+                print(vertices[int(arguments[1]) - 1] )
+                
+            
+            if len(arguments) != 4:
+                for i in range( len(arguments) - 4 ):                    
+                    add_polygon(polygons,
+                            float(vertices[int(arguments[1]) - 1][0]),
+                            float(vertices[int(arguments[1]) - 1][1]),
+                            float(vertices[int(arguments[1]) - 1][2]),
+                            float(vertices[int(arguments[3 + i]) - 1][0]),
+                            float(vertices[int(arguments[3 + i]) - 1][1]),
+                            float(vertices[int(arguments[3 + i]) - 1][2]),
+                            float(vertices[int(arguments[4 + i]) - 1][0]),
+                            float(vertices[int(arguments[4 + i]) - 1][1]),
+                            float(vertices[int(arguments[4 + i]) - 1][2]),
+                                )
+        
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x0, y0, z0)
     add_point(polygons, x1, y1, z1)
