@@ -58,7 +58,7 @@ def draw_scanline_gouraud(x0, z0, x1, z1, y, screen, zbuffer, c0, c1):
         z+= delta_z
         c = [ c[i] + delta_c[i] for i in range(3) ]
 
-def draw_scanline_phong(x0, z0, x1, z1, y, screen, zbuffer, v0, v1, view, ambient, light, symbols, reflect):
+def draw_scanline_phong(x0, z0, x1, z1, y, screen, zbuffer, v0, v1, view, ambient, lights, symbols, reflect):
     if x0 > x1:
         tx = x0
         tz = z0
@@ -84,7 +84,7 @@ def draw_scanline_phong(x0, z0, x1, z1, y, screen, zbuffer, v0, v1, view, ambien
         t = [v[i] for i in range(3)]
         normalize(t)
         
-        color = get_lighting(t, view, ambient, light, symbols, reflect )
+        color = get_lighting(t, view, ambient, lights, symbols, reflect )
         plot(screen, zbuffer, color, x, y, z)
         x+= 1
         z+= delta_z
@@ -200,7 +200,7 @@ def scanline_convert_gouraud(polygons, i, screen, zbuffer, col_0, col_1, col_2):
         c1 = [ c1[i] + dc1[i] for i in range(3) ]
         y+= 1
 
-def scanline_convert_phong(polygons, i, screen, zbuffer, v_0, v_1, v_2, view, ambient, light, symbols, reflect):
+def scanline_convert_phong(polygons, i, screen, zbuffer, v_0, v_1, v_2, view, ambient, lights, symbols, reflect):
     flip = False
     BOT = 0
     TOP = 2
@@ -250,7 +250,7 @@ def scanline_convert_phong(polygons, i, screen, zbuffer, v_0, v_1, v_2, view, am
         #draw_line(int(x0), y, z0, int(x1), y, z1, screen, zbuffer, color)
         # print("\n drawing new scanline")
         # print(dc0, dc1)
-        draw_scanline_phong(int(x0), z0, int(x1), z1, y, screen, zbuffer, v0, v1, view, ambient, light, symbols, reflect)
+        draw_scanline_phong(int(x0), z0, int(x1), z1, y, screen, zbuffer, v0, v1, view, ambient, lights, symbols, reflect)
         x0+= dx0
         z0+= dz0
         v0 = [ v0[i] + dv0[i] for i in range(3) ]
@@ -265,7 +265,7 @@ def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x1, y1, z1)
     add_point(polygons, x2, y2, z2)
 
-def draw_polygons( polygons, screen, zbuffer, view, ambient, light, symbols, reflect):
+def draw_polygons( polygons, screen, zbuffer, view, ambient, lights, symbols, reflect):
     if len(polygons) < 2:
         print 'Need at least 3 points to draw'
         return
@@ -278,12 +278,12 @@ def draw_polygons( polygons, screen, zbuffer, view, ambient, light, symbols, ref
         #print normal
         if normal[2] > 0:
 
-            color = get_lighting(normal, view, ambient, light, symbols, reflect )
+            color = get_lighting(normal, view, ambient, lights, symbols, reflect )
             scanline_convert(polygons, point, screen, zbuffer, color)
 
         point+= 3
 
-def draw_polygons_gouraud( polygons, screen, zbuffer, view, ambient, light, symbols, reflect):
+def draw_polygons_gouraud( polygons, screen, zbuffer, view, ambient, lights, symbols, reflect):
     if len(polygons) < 2:
         print 'Need at least 3 points to draw'
         return
@@ -336,9 +336,9 @@ def draw_polygons_gouraud( polygons, screen, zbuffer, view, ambient, light, symb
         
         if normal[2] > 0:
 
-            col_0 = get_lighting(norm_0, view, ambient, light, symbols, reflect )
-            col_1 = get_lighting(norm_1, view, ambient, light, symbols, reflect )
-            col_2 = get_lighting(norm_2, view, ambient, light, symbols, reflect )
+            col_0 = get_lighting(norm_0, view, ambient, lights, symbols, reflect )
+            col_1 = get_lighting(norm_1, view, ambient, lights, symbols, reflect )
+            col_2 = get_lighting(norm_2, view, ambient, lights, symbols, reflect )
 
             print("\ndraw new triangle")
             print(col_0, col_1, col_2)
@@ -347,7 +347,7 @@ def draw_polygons_gouraud( polygons, screen, zbuffer, view, ambient, light, symb
 
         point+= 3
 
-def draw_polygons_phong( polygons, screen, zbuffer, view, ambient, light, symbols, reflect):
+def draw_polygons_phong( polygons, screen, zbuffer, view, ambient, lights, symbols, reflect):
     if len(polygons) < 2:
         print 'Need at least 3 points to draw'
         return
@@ -400,7 +400,7 @@ def draw_polygons_phong( polygons, screen, zbuffer, view, ambient, light, symbol
         
         if normal[2] > 0:
             
-            scanline_convert_phong(polygons, point, screen, zbuffer, norm_0, norm_1, norm_2, view, ambient, light, symbols, reflect)
+            scanline_convert_phong(polygons, point, screen, zbuffer, norm_0, norm_1, norm_2, view, ambient, lights, symbols, reflect)
 
         point+= 3
 

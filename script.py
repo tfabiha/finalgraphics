@@ -23,7 +23,8 @@ def first_pass( commands ):
     name = 'default'
     num_frames = 1
     draw_poly = draw_polygons
-
+    lights = []
+    
     frames_pres = False
     vary_pres = False
 
@@ -41,18 +42,21 @@ def first_pass( commands ):
             name = args[0]
             #print(name)
         elif c == "shading":
-            print(args)
+            #print(args)
             if command["shade_type"] == "gouraud":
                 draw_poly = draw_polygons_gouraud
             elif command["shade_type"] == "phong":
                 draw_poly = draw_polygons_phong
+
+        elif c == "light":
+            lights.append( command["light"] )
 
     #print("Name "+name+" is being used.")
     if vary_pres and not frames_pres:
         sys.exit()
 
     #print(num_frames)
-    return (name, num_frames, draw_poly)
+    return (name, num_frames, draw_poly, lights)
 
 """======== second_pass( commands ) ==========
 
@@ -104,6 +108,8 @@ def run(filename):
     ambient = [50,
                50,
                50]
+    lights = []
+    
     light = [[0.5,
                0.75,
               1],
@@ -111,6 +117,7 @@ def run(filename):
               255,
               255]]
 
+    
     color = [0, 0, 0]
     symbols['.white'] = ['constants',
                          {'red': [0.2, 0.5, 0.5],
@@ -118,9 +125,25 @@ def run(filename):
                           'blue': [0.2, 0.5, 0.5]}]
     reflect = '.white'
 
-    (name, num_frames, draw_poly) = first_pass(commands)
+    (name, num_frames, draw_poly, light_keys) = first_pass(commands)
     frames = second_pass(commands, num_frames)
 
+    for key in light_keys:
+        lights.append( [ symbols[key][1]["location"], symbols[key][1]["color"] ] )
+
+    
+    if lights == []:
+        lights.append(light)
+
+    print(lights)
+    
+    for command in commands:
+        print(command)
+
+    print("\n\n")
+    for key in symbols.keys():
+        print(key, symbols[key])
+        
     for frm in range(num_frames):
         tmp = new_matrix()
         ident( tmp )
@@ -161,7 +184,7 @@ def run(filename):
                 add_sphere(tmp,
                         args[0], args[1], args[2], args[3], step_3d)
                 matrix_mult( stack[-1], tmp )
-                draw_poly(tmp, screen, zbuffer, view, ambient, light, symbols, reflect)
+                draw_poly(tmp, screen, zbuffer, view, ambient, lights, symbols, reflect)
                 tmp = []
                 reflect = '.white'
                 
@@ -172,7 +195,7 @@ def run(filename):
                 add_torus(tmp,
                               args[0], args[1], args[2], args[3], args[4], step_3d)
                 matrix_mult( stack[-1], tmp )
-                draw_poly(tmp, screen, zbuffer, view, ambient, light, symbols, reflect)
+                draw_poly(tmp, screen, zbuffer, view, ambient, lights, symbols, reflect)
                 tmp = []
                 reflect = '.white'
                 

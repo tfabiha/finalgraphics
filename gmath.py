@@ -21,25 +21,34 @@ COLOR = 1
 SPECULAR_EXP = 4
 
 #lighting functions
-def get_lighting(normal, view, ambient, light, symbols, reflect ):
+def get_lighting(normal, view, ambient, lights, symbols, reflect ):
 
-    n = normal[:]
-    normalize(n)
-    normalize(light[LOCATION])
-    normalize(view)
-    r = symbols[reflect][1]
+    ret = [0, 0, 0]
 
-    a = calculate_ambient(ambient, r)
-    d = calculate_diffuse(light, r, n)
-    s = calculate_specular(light, r, view, n)
+    for light in lights:
+        n = normal[:]
+        normalize(n)
+        normalize(light[LOCATION])
+        normalize(view)
+        r = symbols[reflect][1]
+        
+        a = calculate_ambient(ambient, r)
+        d = calculate_diffuse(light, r, n)
+        s = calculate_specular(light, r, view, n)
+        
+        i = [0, 0, 0]
+        i[RED] = int(a[RED] + d[RED] + s[RED])
+        i[GREEN] = int(a[GREEN] + d[GREEN] + s[GREEN])
+        i[BLUE] = int(a[BLUE] + d[BLUE] + s[BLUE])
+        limit_color(i)
 
-    i = [0, 0, 0]
-    i[RED] = int(a[RED] + d[RED] + s[RED])
-    i[GREEN] = int(a[GREEN] + d[GREEN] + s[GREEN])
-    i[BLUE] = int(a[BLUE] + d[BLUE] + s[BLUE])
-    limit_color(i)
-
-    return i
+        ret[RED] += i[RED]
+        ret[GREEN] += i[GREEN]
+        ret[BLUE] += i[BLUE]
+        
+    limit_color(ret)
+        
+    return ret
 
 def calculate_ambient(alight, reflect):
     a = [0, 0, 0]
