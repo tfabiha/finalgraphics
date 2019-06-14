@@ -22,6 +22,7 @@ def first_pass( commands ):
 
     name = 'default'
     num_frames = 1
+    draw_poly = draw_polygons
 
     frames_pres = False
     vary_pres = False
@@ -39,13 +40,19 @@ def first_pass( commands ):
         elif c == "basename":
             name = args[0]
             #print(name)
+        elif c == "shading":
+            print(args)
+            if command["shade_type"] == "gouraud":
+                draw_poly = draw_polygons_gouraud
+            elif command["shade_type"] == "phong":
+                draw_poly = draw_polygons_phong
 
     #print("Name "+name+" is being used.")
     if vary_pres and not frames_pres:
         sys.exit()
 
     #print(num_frames)
-    return (name, num_frames)
+    return (name, num_frames, draw_poly)
 
 """======== second_pass( commands ) ==========
 
@@ -111,7 +118,7 @@ def run(filename):
                           'blue': [0.2, 0.5, 0.5]}]
     reflect = '.white'
 
-    (name, num_frames) = first_pass(commands)
+    (name, num_frames, draw_poly) = first_pass(commands)
     frames = second_pass(commands, num_frames)
 
     for frm in range(num_frames):
@@ -144,7 +151,7 @@ def run(filename):
                         args[0], args[1], args[2],
                         args[3], args[4], args[5])
                 matrix_mult( stack[-1], tmp )
-                draw_polygons_phong(tmp, screen, zbuffer, view, ambient, light, symbols, reflect)
+                draw_poly(tmp, screen, zbuffer, view, ambient, light, symbols, reflect)
                 tmp = []
                 reflect = '.white'
                 
@@ -154,7 +161,7 @@ def run(filename):
                 add_sphere(tmp,
                         args[0], args[1], args[2], args[3], step_3d)
                 matrix_mult( stack[-1], tmp )
-                draw_polygons_phong(tmp, screen, zbuffer, view, ambient, light, symbols, reflect)
+                draw_poly(tmp, screen, zbuffer, view, ambient, light, symbols, reflect)
                 tmp = []
                 reflect = '.white'
                 
@@ -165,7 +172,7 @@ def run(filename):
                 add_torus(tmp,
                               args[0], args[1], args[2], args[3], args[4], step_3d)
                 matrix_mult( stack[-1], tmp )
-                draw_polygons_phong(tmp, screen, zbuffer, view, ambient, light, symbols, reflect)
+                draw_poly(tmp, screen, zbuffer, view, ambient, light, symbols, reflect)
                 tmp = []
                 reflect = '.white'
                 
