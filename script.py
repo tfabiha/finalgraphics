@@ -198,6 +198,9 @@ def run(filename):
                 draw_poly(tmp, screen, zbuffer, view, ambient, lights, symbols, reflect)
                 tmp = []
                 reflect = '.white'
+
+            elif c == "mesh":
+                pass
                 
             elif c == 'line':
                 add_edge(tmp,
