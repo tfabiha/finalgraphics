@@ -32,8 +32,8 @@ def draw_scanline_gouraud(x0, z0, x1, z1, y, screen, zbuffer, c0, c1):
         z1 = tz
         c1 = tc
 
-    print("\nnew line")
-    print(c0, c1)
+    #print("\nnew line")
+    #print(c0, c1)
     
     x = x0
     z = z0
@@ -70,8 +70,8 @@ def draw_scanline_phong(x0, z0, x1, z1, y, screen, zbuffer, v0, v1, view, ambien
         z1 = tz
         v1 = tv
 
-    print("\nnew line")
-    print(v0, v1)
+    #print("\nnew line")
+    #print(v0, v1)
     
     x = x0
     z = z0
@@ -392,8 +392,8 @@ def draw_polygons_gouraud( polygons, screen, zbuffer, view, ambient, lights, sym
             col_1 = get_lighting(norm_1, view, ambient, lights, symbols, reflect )
             col_2 = get_lighting(norm_2, view, ambient, lights, symbols, reflect )
 
-            print("\ndraw new triangle")
-            print(col_0, col_1, col_2)
+            #print("\ndraw new triangle")
+            #print(col_0, col_1, col_2)
             
             scanline_convert_gouraud(polygons, point, screen, zbuffer, col_0, col_1, col_2)
 

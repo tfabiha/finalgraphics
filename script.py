@@ -135,16 +135,17 @@ def run(filename):
     if lights == []:
         lights.append(light)
 
-    print(lights)
+    #print(lights)
     
-    for command in commands:
-        print(command)
+    #for command in commands:
+        #print(command)
 
-    print("\n\n")
-    for key in symbols.keys():
-        print(key, symbols[key])
+    #print("\n\n")
+    #for key in symbols.keys():
+        #print(key, symbols[key])
         
     for frm in range(num_frames):
+        print("frame "+str(frm))
         tmp = new_matrix()
         ident( tmp )
 
@@ -203,7 +204,7 @@ def run(filename):
                 tmp = []
 
                 add_mesh( tmp, command['cs'] )
-                print(tmp)
+                #print(tmp)
 
                 matrix_mult( stack[-1], tmp )
                 draw_poly(tmp, screen, zbuffer, view, ambient, lights, symbols, reflect)
