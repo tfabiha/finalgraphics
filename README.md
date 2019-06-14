@@ -4,5 +4,5 @@ Names: T Fabiha and Tabassum F
 
 # Features
 - [x] Shading models
-- [ ] Multiple lights
-- [ ] Mesh
+- [x] Multiple lights
+- [x] Mesh
